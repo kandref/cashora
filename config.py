@@ -1,0 +1,31 @@
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+DB_PATH = os.getenv("DB_PATH", "money_tracker.db")
+
+KATEGORI_PENGELUARAN = [
+    "Makan & Minum",
+    "Jajan",
+    "Transport",
+    "Belanja",
+    "Hiburan",
+    "Kesehatan",
+    "Pendidikan",
+    "Kosan",
+    "Cicilan",
+    "Cicilan HP",
+    "Tagihan",
+    "Lainnya",
+]
+
+KATEGORI_PEMASUKAN = [
+    "Gaji",
+    "Freelance",
+    "Investasi",
+    "Hadiah",
+    "Lainnya",
+]

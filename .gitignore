@@ -1,0 +1,6 @@
+.env
+*.db
+__pycache__/
+*.pyc
+bot.log
+bot_err.log
