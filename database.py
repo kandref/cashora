@@ -1,6 +1,5 @@
 import sqlite3
-from datetime import datetime
-from config import DB_PATH
+from config import DB_PATH, now_wib
 
 
 def get_conn():
@@ -61,7 +60,7 @@ def init_db():
 # ── Transactions ──────────────────────────────────────────────────────────────
 
 def add_transaction(user_id, tipe, amount, category, description, date=None):
-    date = date or datetime.now().strftime("%Y-%m-%d")
+    date = date or now_wib().strftime("%Y-%m-%d")
     with get_conn() as conn:
         conn.execute(
             "INSERT INTO transactions (user_id, type, amount, category, description, date) VALUES (?,?,?,?,?,?)",
@@ -71,7 +70,7 @@ def add_transaction(user_id, tipe, amount, category, description, date=None):
 
 def get_transactions(user_id, month=None):
     """Return transactions for a user. month format: 'YYYY-MM'"""
-    month = month or datetime.now().strftime("%Y-%m")
+    month = month or now_wib().strftime("%Y-%m")
     with get_conn() as conn:
         rows = conn.execute(
             "SELECT * FROM transactions WHERE user_id=? AND strftime('%Y-%m', date)=? ORDER BY date DESC",
@@ -90,7 +89,7 @@ def delete_transaction(user_id, tx_id):
 
 def get_summary(user_id, month=None):
     """Return total pemasukan, pengeluaran, dan saldo untuk bulan tertentu."""
-    month = month or datetime.now().strftime("%Y-%m")
+    month = month or now_wib().strftime("%Y-%m")
     with get_conn() as conn:
         rows = conn.execute(
             """
@@ -109,7 +108,7 @@ def get_summary(user_id, month=None):
 
 
 def get_spending_by_category(user_id, month=None):
-    month = month or datetime.now().strftime("%Y-%m")
+    month = month or now_wib().strftime("%Y-%m")
     with get_conn() as conn:
         rows = conn.execute(
             """
@@ -143,7 +142,7 @@ def get_all_transactions_for_export(user_id, month=None):
 # ── Budgets ───────────────────────────────────────────────────────────────────
 
 def set_budget(user_id, category, amount, month=None):
-    month = month or datetime.now().strftime("%Y-%m")
+    month = month or now_wib().strftime("%Y-%m")
     with get_conn() as conn:
         conn.execute(
             "INSERT INTO budgets (user_id, category, amount, month) VALUES (?,?,?,?) "
@@ -153,7 +152,7 @@ def set_budget(user_id, category, amount, month=None):
 
 
 def get_budgets(user_id, month=None):
-    month = month or datetime.now().strftime("%Y-%m")
+    month = month or now_wib().strftime("%Y-%m")
     with get_conn() as conn:
         rows = conn.execute(
             "SELECT * FROM budgets WHERE user_id=? AND month=?",
@@ -164,7 +163,7 @@ def get_budgets(user_id, month=None):
 
 def get_budget_status(user_id, month=None):
     """Gabungkan budget dengan pengeluaran aktual per kategori."""
-    month = month or datetime.now().strftime("%Y-%m")
+    month = month or now_wib().strftime("%Y-%m")
     budgets = {b["category"]: b["amount"] for b in get_budgets(user_id, month)}
     spending = {s["category"]: s["total"] for s in get_spending_by_category(user_id, month)}
 
@@ -185,7 +184,7 @@ def get_budget_status(user_id, month=None):
 # ── Saldo Awal ────────────────────────────────────────────────────────────────
 
 def set_saldo_awal(user_id, amount, month=None):
-    month = month or datetime.now().strftime("%Y-%m")
+    month = month or now_wib().strftime("%Y-%m")
     with get_conn() as conn:
         conn.execute(
             "INSERT INTO saldo_awal (user_id, amount, month) VALUES (?,?,?) "
@@ -195,7 +194,7 @@ def set_saldo_awal(user_id, amount, month=None):
 
 
 def get_saldo_awal(user_id, month=None):
-    month = month or datetime.now().strftime("%Y-%m")
+    month = month or now_wib().strftime("%Y-%m")
     with get_conn() as conn:
         row = conn.execute(
             "SELECT amount FROM saldo_awal WHERE user_id=? AND month=?",
@@ -206,7 +205,7 @@ def get_saldo_awal(user_id, month=None):
 
 def get_saldo_sisa(user_id, month=None):
     """Hitung saldo sisa = saldo_awal - pengeluaran + pemasukan bulan ini."""
-    month = month or datetime.now().strftime("%Y-%m")
+    month = month or now_wib().strftime("%Y-%m")
     saldo_awal = get_saldo_awal(user_id, month)
     summary = get_summary(user_id, month)
     if saldo_awal is None:
@@ -235,7 +234,7 @@ def get_daily_budgets(user_id):
 
 
 def get_today_spending(user_id, category):
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = now_wib().strftime("%Y-%m-%d")
     with get_conn() as conn:
         row = conn.execute(
             "SELECT COALESCE(SUM(amount), 0) as total FROM transactions "
@@ -267,7 +266,7 @@ def check_daily_alert(user_id, category):
 def _week_range():
     """Kembalikan (senin, minggu) dalam format YYYY-MM-DD untuk minggu ini."""
     from datetime import timedelta
-    today = datetime.now().date()
+    today = now_wib().date()
     monday = today - timedelta(days=today.weekday())
     sunday = monday + timedelta(days=6)
     return monday.strftime("%Y-%m-%d"), sunday.strftime("%Y-%m-%d")

@@ -1,4 +1,5 @@
 from datetime import datetime
+from config import now_wib
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ContextTypes,
@@ -39,7 +40,7 @@ def _list_text(gaji: float, potongan: list) -> str:
     total = _total_potongan(potongan)
     saldo_bersih = gaji - total
 
-    lines = [f"💸 *Gajian — {datetime.now().strftime('%B %Y')}*\n"]
+    lines = [f"💸 *Gajian — {now_wib().strftime('%B %Y')}*\n"]
     lines.append(f"Gaji masuk: *{fmt(gaji)}*\n")
 
     if potongan:
@@ -194,8 +195,8 @@ async def _simpan_gajian(query, context):
     gaji = context.user_data["gaji"]
     potongan = context.user_data["potongan"]
     user_id = query.from_user.id
-    today = datetime.now().strftime("%Y-%m-%d")
-    month = datetime.now().strftime("%Y-%m")
+    today = now_wib().strftime("%Y-%m-%d")
+    month = now_wib().strftime("%Y-%m")
 
     # Catat gaji sebagai pemasukan
     add_transaction(user_id, "pemasukan", gaji, "Gaji", "Gaji masuk", today)

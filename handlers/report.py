@@ -1,6 +1,6 @@
 import io
 import calendar
-from datetime import datetime
+from config import now_wib
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -17,7 +17,7 @@ def format_rupiah(amount: float) -> str:
 
 
 def _current_month_label():
-    now = datetime.now()
+    now = now_wib()
     bulan = [
         "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
         "Juli", "Agustus", "September", "Oktober", "November", "Desember",
@@ -28,7 +28,7 @@ def _current_month_label():
 async def laporan(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     args = context.args
-    month = args[0] if args else datetime.now().strftime("%Y-%m")
+    month = args[0] if args else now_wib().strftime("%Y-%m")
 
     summary = get_summary(user_id, month)
     spending = get_spending_by_category(user_id, month)

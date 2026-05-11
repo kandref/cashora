@@ -1,11 +1,11 @@
-from datetime import datetime
+from config import now_wib
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
 from database import get_conn
 
 
 def _current_month():
-    return datetime.now().strftime("%Y-%m")
+    return now_wib().strftime("%Y-%m")
 
 
 async def reset_start(update: Update, context: ContextTypes.DEFAULT_TYPE):

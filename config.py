@@ -1,7 +1,13 @@
 from dotenv import load_dotenv
+from datetime import datetime, timezone, timedelta
 import os
 
 load_dotenv()
+
+WIB = timezone(timedelta(hours=7))
+
+def now_wib() -> datetime:
+    return datetime.now(WIB)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 

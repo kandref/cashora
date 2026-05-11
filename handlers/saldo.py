@@ -1,5 +1,6 @@
 import calendar
 from datetime import datetime
+from config import now_wib
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -24,13 +25,13 @@ def format_rupiah(amount: float) -> str:
 
 
 def _days_left_in_month():
-    now = datetime.now()
+    now = now_wib()
     last_day = calendar.monthrange(now.year, now.month)[1]
     return last_day - now.day + 1
 
 
 async def setsaldo_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    month = datetime.now().strftime("%Y-%m")
+    month = now_wib().strftime("%Y-%m")
     existing = get_saldo_awal(update.effective_user.id, month)
     hint = f"\n_(Saldo sekarang: {format_rupiah(existing)})_" if existing else ""
     await update.message.reply_text(
@@ -72,7 +73,7 @@ async def cancel_saldo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def cek_saldo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    now = datetime.now()
+    now = now_wib()
     month = now.strftime("%Y-%m")
 
     saldo_awal = get_saldo_awal(user_id, month)
