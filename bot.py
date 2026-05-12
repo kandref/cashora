@@ -10,7 +10,7 @@ from telegram.error import Conflict, NetworkError
 
 from config import BOT_TOKEN, WIB
 from database import init_db
-from handlers.daily_summary import daily_summary_job
+from handlers.daily_summary import daily_summary_job, test_summary
 from handlers.transaction import catat_handler, riwayat, hapus
 from handlers.report import laporan
 from handlers.budget import budget_handler, cek_budget
@@ -109,6 +109,7 @@ def main():
     app.add_handler(reset_command)
     for cb in reset_callbacks:
         app.add_handler(cb)
+    app.add_handler(CommandHandler("testsummary", test_summary))
     app.add_error_handler(error_handler)
 
     app.job_queue.run_daily(
