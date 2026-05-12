@@ -97,6 +97,3 @@ async def daily_summary_job(context):
             pass
 
 
-async def test_summary(update, context):
-    text = _build_summary_lines(update.effective_user.id, now_wib())
-    await update.message.reply_text(text, parse_mode="Markdown")
