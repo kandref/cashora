@@ -213,6 +213,17 @@ def get_saldo_sisa(user_id, month=None):
     return saldo_awal - summary["pengeluaran"] + summary["pemasukan"]
 
 
+# ── Users ─────────────────────────────────────────────────────────────────────
+
+def get_all_user_ids():
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT DISTINCT user_id FROM transactions "
+            "UNION SELECT DISTINCT user_id FROM saldo_awal"
+        ).fetchall()
+    return [r[0] for r in rows]
+
+
 # ── Daily Budgets ─────────────────────────────────────────────────────────────
 
 def set_daily_budget(user_id, category, daily_limit):
