@@ -215,6 +215,16 @@ def get_saldo_sisa(user_id, month=None):
 
 # ── Users ─────────────────────────────────────────────────────────────────────
 
+def get_today_transactions(user_id):
+    today = now_wib().strftime("%Y-%m-%d")
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT * FROM transactions WHERE user_id=? AND date=? ORDER BY id ASC",
+            (user_id, today),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
 def get_all_user_ids():
     with get_conn() as conn:
         rows = conn.execute(
