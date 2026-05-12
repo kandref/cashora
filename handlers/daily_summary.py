@@ -4,6 +4,7 @@ from database import (
     get_all_user_ids, get_summary, get_saldo_sisa,
     get_budget_status, get_daily_budgets, get_today_spending,
     get_weekly_budgets, get_week_spending, _week_range,
+    get_today_transactions,
 )
 
 BULAN = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -68,6 +69,17 @@ def _build_summary_lines(user_id, now):
             icon2 = "🔴" if spent > limit else ("🟡" if pct >= 80 else "🟢")
             lines.append(f"{icon2} {cat}: {format_rupiah(spent)} / {format_rupiah(limit)}")
             lines.append(f"   {_bar(pct)} {pct:.0f}%")
+
+    # Transaksi hari ini
+    txs = get_today_transactions(user_id)
+    if txs:
+        lines.append("\n*🧾 Transaksi Hari Ini:*")
+        for tx in txs:
+            arrow = "➕" if tx["type"] == "pemasukan" else "➖"
+            desc = f" — {tx['description']}" if tx.get("description") else ""
+            lines.append(f"{arrow} {tx['category']}: {format_rupiah(tx['amount'])}{desc}")
+    else:
+        lines.append("\n_Belum ada transaksi hari ini._")
 
     return "\n".join(lines)
 
