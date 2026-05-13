@@ -13,10 +13,11 @@ logger = logging.getLogger(__name__)
 HEADERS = ["Timestamp", "Tanggal", "Tipe", "Kategori", "Jumlah", "Keterangan"]
 
 _sheet = None
+_last_error = None
 
 
 def _get_sheet():
-    global _sheet
+    global _sheet, _last_error
     if _sheet is not None:
         return _sheet
 
@@ -34,6 +35,7 @@ def _get_sheet():
         _ensure_headers(_sheet)
         return _sheet
     except Exception as e:
+        _last_error = str(e)
         logger.error("GSheet init error: %s", e)
         return None
 
@@ -60,10 +62,10 @@ def append_transaction(tipe: str, kategori: str, amount: float, description: str
         _sheet = None
 
 
-def _sync_all_to_sheet(transactions: list) -> int:
+def _sync_all_to_sheet(transactions: list):
     sheet = _get_sheet()
     if sheet is None:
-        return -1
+        return -1, _last_error
 
     try:
         sheet.clear()
@@ -84,12 +86,12 @@ def _sync_all_to_sheet(transactions: list) -> int:
         if rows:
             sheet.append_rows(rows, value_input_option="USER_ENTERED")
 
-        return len(rows)
+        return len(rows), None
     except Exception as e:
         logger.error("GSheet sync error: %s", e)
         global _sheet
         _sheet = None
-        return -1
+        return -1, str(e)
 
 
 async def syncsheet(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -98,12 +100,32 @@ async def syncsheet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     await update.message.reply_text("Sedang sync ke Google Sheets...")
 
+    creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
+    sheet_id = os.getenv("GSHEET_ID")
+
+    if not creds_json:
+        await update.message.reply_text("❌ Env var GOOGLE_CREDENTIALS_JSON tidak ditemukan.")
+        return
+    if not sheet_id:
+        await update.message.reply_text("❌ Env var GSHEET_ID tidak ditemukan.")
+        return
+
+    try:
+        import json
+        json.loads(creds_json)
+    except Exception as e:
+        await update.message.reply_text(f"❌ GOOGLE_CREDENTIALS_JSON tidak valid JSON:\n`{e}`", parse_mode="Markdown")
+        return
+
     txs = get_all_transactions_for_export(user_id)
-    count = _sync_all_to_sheet(txs)
+    count, err = _sync_all_to_sheet(txs)
 
     if count == -1:
-        await update.message.reply_text("Gagal sync. Cek log di Railway.")
+        msg = "❌ Gagal koneksi ke Google Sheets."
+        if err:
+            msg += f"\n\nError: `{err}`"
+        await update.message.reply_text(msg, parse_mode="Markdown")
     elif count == 0:
         await update.message.reply_text("Tidak ada transaksi untuk di-sync.")
     else:
-        await update.message.reply_text(f"Berhasil sync *{count} transaksi* ke Google Sheets.", parse_mode="Markdown")
+        await update.message.reply_text(f"✅ Berhasil sync *{count} transaksi* ke Google Sheets.", parse_mode="Markdown")
