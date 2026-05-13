@@ -139,6 +139,34 @@ def get_all_transactions_for_export(user_id, month=None):
     return [dict(r) for r in rows]
 
 
+def get_unique_transaction_dates(user_id):
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT DISTINCT date FROM transactions WHERE user_id=? ORDER BY date ASC",
+            (user_id,),
+        ).fetchall()
+    return [r["date"] for r in rows]
+
+
+def get_saldo_at_date(user_id, date):
+    month = date[:7]
+    saldo_awal = get_saldo_awal(user_id, month)
+    if saldo_awal is None:
+        return None
+    with get_conn() as conn:
+        row = conn.execute(
+            """
+            SELECT
+                COALESCE(SUM(CASE WHEN type='pemasukan'   THEN amount ELSE 0 END), 0) AS total_masuk,
+                COALESCE(SUM(CASE WHEN type='pengeluaran' THEN amount ELSE 0 END), 0) AS total_keluar
+            FROM transactions
+            WHERE user_id=? AND date<=? AND strftime('%Y-%m', date)=?
+            """,
+            (user_id, date, month),
+        ).fetchone()
+    return saldo_awal + row["total_masuk"] - row["total_keluar"]
+
+
 # ── Budgets ───────────────────────────────────────────────────────────────────
 
 def set_budget(user_id, category, amount, month=None):
