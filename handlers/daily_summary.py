@@ -6,6 +6,7 @@ from database import (
     get_weekly_budgets, get_week_spending, _week_range,
     get_today_transactions,
 )
+from handlers.gsheet import append_closing
 
 BULAN = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
          "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
@@ -93,6 +94,9 @@ async def daily_summary_job(context):
                 text=_build_summary_lines(user_id, now),
                 parse_mode="Markdown",
             )
+            saldo = get_saldo_sisa(user_id)
+            if saldo is not None:
+                append_closing(saldo)
         except Exception:
             pass
 

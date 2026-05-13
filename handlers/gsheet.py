@@ -46,6 +46,22 @@ def _ensure_headers(sheet):
         sheet.insert_row(HEADERS, index=1)
 
 
+def append_closing(saldo: float, date: str = None):
+    sheet = _get_sheet()
+    if sheet is None:
+        return
+
+    try:
+        timestamp = now_wib().strftime("%Y-%m-%d %H:%M:%S")
+        tanggal = date or now_wib().strftime("%Y-%m-%d")
+        row = [timestamp, tanggal, "Closing", "Saldo Akhir", saldo, ""]
+        sheet.append_row(row, value_input_option="USER_ENTERED")
+    except Exception as e:
+        logger.error("GSheet closing error: %s", e)
+        global _sheet
+        _sheet = None
+
+
 def append_transaction(tipe: str, kategori: str, amount: float, description: str, date: str = None):
     sheet = _get_sheet()
     if sheet is None:
