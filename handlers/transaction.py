@@ -12,6 +12,7 @@ from database import (
     check_daily_alert, check_weekly_alert, get_saldo_sisa,
 )
 from config import KATEGORI_PENGELUARAN, KATEGORI_PEMASUKAN
+from handlers.gsheet import append_transaction as gsheet_append
 
 # States
 PILIH_TIPE, PILIH_KATEGORI, INPUT_JUMLAH, INPUT_DESKRIPSI = range(4)
@@ -104,6 +105,7 @@ async def _simpan_transaksi(update_or_query, context, desc):
     amount = ud["amount"]
 
     add_transaction(user_id, tipe, amount, kategori, desc)
+    gsheet_append(tipe, kategori, amount, desc)
 
     icon = "💸" if tipe == "pengeluaran" else "💰"
     msg = (
