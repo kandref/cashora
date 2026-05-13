@@ -78,7 +78,7 @@ def append_transaction(tipe: str, kategori: str, amount: float, description: str
         _sheet = None
 
 
-def _sync_all_to_sheet(transactions: list):
+def _sync_all_to_sheet(transactions: list, closing_by_date: dict = None):
     sheet = _get_sheet()
     if sheet is None:
         return -1, _last_error
@@ -87,17 +87,29 @@ def _sync_all_to_sheet(transactions: list):
         sheet.clear()
         sheet.append_row(HEADERS, value_input_option="USER_ENTERED")
 
-        rows = [
-            [
+        # Urutkan transaksi dari terlama ke terbaru
+        sorted_txs = list(reversed(transactions))
+
+        rows = []
+        processed_dates = set()
+
+        for tx in sorted_txs:
+            rows.append([
                 tx.get("created_at") or tx["date"],
                 tx["date"],
                 tx["type"].capitalize(),
                 tx["category"],
                 tx["amount"],
                 tx.get("description", ""),
-            ]
-            for tx in reversed(transactions)
-        ]
+            ])
+            # Setelah transaksi terakhir di hari itu, sisipkan closing
+            processed_dates.add(tx["date"])
+
+        # Tambah closing rows untuk setiap tanggal
+        if closing_by_date:
+            for date, saldo in sorted(closing_by_date.items()):
+                if saldo is not None:
+                    rows.append([f"{date} 23:59:00", date, "Closing", "Saldo Akhir", saldo, ""])
 
         if rows:
             sheet.append_rows(rows, value_input_option="USER_ENTERED")
@@ -111,8 +123,6 @@ def _sync_all_to_sheet(transactions: list):
 
 
 async def syncsheet(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    from database import get_all_transactions_for_export
-
     user_id = update.effective_user.id
     await update.message.reply_text("Sedang sync ke Google Sheets...")
 
@@ -133,8 +143,11 @@ async def syncsheet(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ GOOGLE_CREDENTIALS_JSON tidak valid JSON:\n`{e}`", parse_mode="Markdown")
         return
 
+    from database import get_all_transactions_for_export, get_unique_transaction_dates, get_saldo_at_date
     txs = get_all_transactions_for_export(user_id)
-    count, err = _sync_all_to_sheet(txs)
+    dates = get_unique_transaction_dates(user_id)
+    closing_by_date = {d: get_saldo_at_date(user_id, d) for d in dates}
+    count, err = _sync_all_to_sheet(txs, closing_by_date)
 
     if count == -1:
         msg = "❌ Gagal koneksi ke Google Sheets."
