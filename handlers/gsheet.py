@@ -3,6 +3,8 @@ import logging
 import os
 
 import gspread
+from telegram import Update
+from telegram.ext import ContextTypes
 
 from config import now_wib
 
@@ -56,3 +58,52 @@ def append_transaction(tipe: str, kategori: str, amount: float, description: str
         logger.error("GSheet append error: %s", e)
         global _sheet
         _sheet = None
+
+
+def _sync_all_to_sheet(transactions: list) -> int:
+    sheet = _get_sheet()
+    if sheet is None:
+        return -1
+
+    try:
+        sheet.clear()
+        sheet.append_row(HEADERS, value_input_option="USER_ENTERED")
+
+        rows = [
+            [
+                tx.get("created_at") or tx["date"],
+                tx["date"],
+                tx["type"].capitalize(),
+                tx["category"],
+                tx["amount"],
+                tx.get("description", ""),
+            ]
+            for tx in reversed(transactions)
+        ]
+
+        if rows:
+            sheet.append_rows(rows, value_input_option="USER_ENTERED")
+
+        return len(rows)
+    except Exception as e:
+        logger.error("GSheet sync error: %s", e)
+        global _sheet
+        _sheet = None
+        return -1
+
+
+async def syncsheet(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    from database import get_all_transactions_for_export
+
+    user_id = update.effective_user.id
+    await update.message.reply_text("Sedang sync ke Google Sheets...")
+
+    txs = get_all_transactions_for_export(user_id)
+    count = _sync_all_to_sheet(txs)
+
+    if count == -1:
+        await update.message.reply_text("Gagal sync. Cek log di Railway.")
+    elif count == 0:
+        await update.message.reply_text("Tidak ada transaksi untuk di-sync.")
+    else:
+        await update.message.reply_text(f"Berhasil sync *{count} transaksi* ke Google Sheets.", parse_mode="Markdown")

@@ -20,6 +20,7 @@ from handlers.gajian import gajian_handler
 from handlers.daily_budget import setbudgetharian_handler, cek_budget_harian
 from handlers.weekly_budget import setbudgetmingguan_handler, cek_budget_mingguan
 from handlers.reset import reset_command, reset_callbacks
+from handlers.gsheet import syncsheet
 
 
 HELP_TEXT = """
@@ -109,6 +110,7 @@ def main():
     app.add_handler(reset_command)
     for cb in reset_callbacks:
         app.add_handler(cb)
+    app.add_handler(CommandHandler("syncsheet", syncsheet))
     app.add_error_handler(error_handler)
 
     app.job_queue.run_daily(
