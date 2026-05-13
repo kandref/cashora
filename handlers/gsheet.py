@@ -143,10 +143,10 @@ async def syncsheet(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ GOOGLE_CREDENTIALS_JSON tidak valid JSON:\n`{e}`", parse_mode="Markdown")
         return
 
-    from database import get_all_transactions_for_export, get_unique_transaction_dates, get_saldo_at_date
+    from database import get_all_transactions_for_export, get_unique_transaction_dates, get_saldo_sisa
     txs = get_all_transactions_for_export(user_id)
     dates = get_unique_transaction_dates(user_id)
-    closing_by_date = {d: get_saldo_at_date(user_id, d) for d in dates}
+    closing_by_date = {d: get_saldo_sisa(user_id, d[:7]) for d in dates}
     count, err = _sync_all_to_sheet(txs, closing_by_date)
 
     if count == -1:
