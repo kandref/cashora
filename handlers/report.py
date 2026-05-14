@@ -48,6 +48,7 @@ async def laporan(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"*Laporan {label}*\n\n"
         f"💰 Pemasukan  : {format_rupiah(summary['pemasukan'])}\n"
         f"💸 Pengeluaran: {format_rupiah(summary['pengeluaran'])}\n"
+        f"📈 Investasi  : {format_rupiah(summary['investasi'])}\n"
         f"{'➕' if summary['saldo'] >= 0 else '➖'} Saldo       : {format_rupiah(abs(summary['saldo']))}"
         + (" (surplus)" if summary['saldo'] >= 0 else " (defisit)")
     )

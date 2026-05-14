@@ -31,7 +31,14 @@ KATEGORI_PENGELUARAN = [
 KATEGORI_PEMASUKAN = [
     "Gaji",
     "Freelance",
-    "Investasi",
     "Hadiah",
+    "Lainnya",
+]
+
+KATEGORI_INVESTASI = [
+    "Reksadana",
+    "Saham",
+    "Deposito",
+    "Obligasi",
     "Lainnya",
 ]

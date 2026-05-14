@@ -100,10 +100,10 @@ def get_summary(user_id, month=None):
             """,
             (user_id, month),
         ).fetchall()
-    result = {"pemasukan": 0.0, "pengeluaran": 0.0}
+    result = {"pemasukan": 0.0, "pengeluaran": 0.0, "investasi": 0.0}
     for r in rows:
         result[r["type"]] = r["total"]
-    result["saldo"] = result["pemasukan"] - result["pengeluaran"]
+    result["saldo"] = result["pemasukan"] - result["pengeluaran"] - result["investasi"]
     return result
 
 
@@ -219,7 +219,7 @@ def get_saldo_sisa(user_id, month=None):
     summary = get_summary(user_id, month)
     if saldo_awal is None:
         return None
-    return saldo_awal - summary["pengeluaran"] + summary["pemasukan"]
+    return saldo_awal - summary["pengeluaran"] - summary["investasi"] + summary["pemasukan"]
 
 
 # ── Users ─────────────────────────────────────────────────────────────────────
