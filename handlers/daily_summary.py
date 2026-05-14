@@ -32,6 +32,7 @@ def _build_summary_lines(user_id, now):
         f"📊 *Ringkasan Harian — {label_hari}*\n",
         f"💰 Pemasukan   : {format_rupiah(summary['pemasukan'])}",
         f"💸 Pengeluaran : {format_rupiah(summary['pengeluaran'])}",
+        f"📈 Investasi   : {format_rupiah(summary['investasi'])}",
         f"{'─' * 28}",
     ]
 
@@ -76,7 +77,7 @@ def _build_summary_lines(user_id, now):
     if txs:
         lines.append("\n*🧾 Transaksi Hari Ini:*")
         for tx in txs:
-            arrow = "➕" if tx["type"] == "pemasukan" else "➖"
+            arrow = "➕" if tx["type"] == "pemasukan" else ("📈" if tx["type"] == "investasi" else "➖")
             desc = f" — {tx['description']}" if tx.get("description") else ""
             lines.append(f"{arrow} {tx['category']}: {format_rupiah(tx['amount'])}{desc}")
     else:

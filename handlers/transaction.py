@@ -11,7 +11,7 @@ from database import (
     add_transaction, get_transactions, delete_transaction,
     check_daily_alert, check_weekly_alert, get_saldo_sisa,
 )
-from config import KATEGORI_PENGELUARAN, KATEGORI_PEMASUKAN
+from config import KATEGORI_PENGELUARAN, KATEGORI_PEMASUKAN, KATEGORI_INVESTASI
 from handlers.gsheet import append_transaction as gsheet_append
 
 # States
@@ -23,7 +23,12 @@ def format_rupiah(amount: float) -> str:
 
 
 def _kategori_keyboard(tipe: str) -> InlineKeyboardMarkup:
-    cats = KATEGORI_PENGELUARAN if tipe == "pengeluaran" else KATEGORI_PEMASUKAN
+    if tipe == "pengeluaran":
+        cats = KATEGORI_PENGELUARAN
+    elif tipe == "investasi":
+        cats = KATEGORI_INVESTASI
+    else:
+        cats = KATEGORI_PEMASUKAN
     buttons = [
         [InlineKeyboardButton(c, callback_data=f"kat_{c}")]
         for c in cats
@@ -36,7 +41,10 @@ async def catat_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [
             InlineKeyboardButton("💸 Pengeluaran", callback_data="tipe_pengeluaran"),
             InlineKeyboardButton("💰 Pemasukan", callback_data="tipe_pemasukan"),
-        ]
+        ],
+        [
+            InlineKeyboardButton("📈 Investasi", callback_data="tipe_investasi"),
+        ],
     ])
     await update.message.reply_text("Mau catat apa?", reply_markup=keyboard)
     return PILIH_TIPE
@@ -107,7 +115,7 @@ async def _simpan_transaksi(update_or_query, context, desc):
     add_transaction(user_id, tipe, amount, kategori, desc)
     gsheet_append(tipe, kategori, amount, desc)
 
-    icon = "💸" if tipe == "pengeluaran" else "💰"
+    icon = "💸" if tipe == "pengeluaran" else ("📈" if tipe == "investasi" else "💰")
     msg = (
         f"{icon} *Transaksi tersimpan!*\n\n"
         f"Tipe     : {tipe.capitalize()}\n"
@@ -177,7 +185,7 @@ async def riwayat(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     lines = ["*Riwayat bulan ini:*\n"]
     for tx in txs[:20]:
-        icon = "💸" if tx["type"] == "pengeluaran" else "💰"
+        icon = "💸" if tx["type"] == "pengeluaran" else ("📈" if tx["type"] == "investasi" else "💰")
         desc = f" — {tx['description']}" if tx["description"] else ""
         lines.append(
             f"{icon} `#{tx['id']}` {tx['date']} | *{tx['category']}* | {format_rupiah(tx['amount'])}{desc}"
