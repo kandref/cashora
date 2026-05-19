@@ -1,4 +1,4 @@
-# Cashora 💰
+# Cashora
 
 A personal finance Telegram bot for tracking income, expenses, and investments — built to remove the friction from daily budgeting.
 
