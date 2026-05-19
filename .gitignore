@@ -4,3 +4,6 @@ __pycache__/
 *.pyc
 bot.log
 bot_err.log
+.claude/
+cashora-portfolio.html
+*.pdf
