@@ -7,7 +7,7 @@ A personal finance Telegram bot for tracking income, expenses, and investments �
 - **Transaction tracking** — Log income, expenses, and investments with categorized entries via inline keyboard
 - **Balance tracking** — Set an opening balance and see it update in real-time after every transaction
 - **Budget management** — Set daily, weekly, and monthly limits per category with automatic overspend alerts
-- **Monthly reports** — Interactive dashboard via Looker Studio, linked directly from the monthly report
+- **Monthly reports** — Real-time dashboard via Looker Studio for spending breakdown and trends
 - **Google Sheets sync** — All transactions and closing balances exported automatically to a linked spreadsheet
 - **Daily digest** — Automated end-of-day summary with budget progress bars and today's transactions
 
